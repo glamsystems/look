@@ -11,7 +11,7 @@ RUN --mount=type=secret,id=GITHUB_ACTOR \
     --mount=type=secret,id=GITHUB_TOKEN \
     export GITHUB_ACTOR=$(cat /run/secrets/GITHUB_ACTOR); \
     export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN); \
-    ./gradlew --console=plain --quiet clean --no-daemon --exclude-task=test :${PROJECT}:jlink -PnoVersionTag=true
+    gradle --console=plain --quiet clean --no-daemon --exclude-task=test :${PROJECT}:jlink -PnoVersionTag=true
 
 
 FROM alpine:3
@@ -27,9 +27,9 @@ RUN adduser \
     glam
 USER glam
 
-WORKDIR /glam
+WORKDIR /look
 
 ARG PROJECT
-COPY --from=jlink /tmp/${PROJECT}/build/${PROJECT} /glam
+COPY --from=jlink /tmp/${PROJECT}/build/${PROJECT} /look
 
 ENTRYPOINT [ "./bin/java" ]

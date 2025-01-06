@@ -221,7 +221,7 @@ RPC nodes.
 [Pull the image from the GitHub Container registry.](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pulling-container-images)
 
 ```shell
-docker pull ghcr.io/sava-software/services/solana:latest
+docker pull ghcr.io/glam-systems/look:latest
 ```
 
 #### Build
@@ -238,7 +238,7 @@ export GITHUB_TOKEN=<YOUR_GITHUB_TOKEN_SECRET>
 docker build \
     --secret type=env,id=GITHUB_ACTOR,env=GITHUB_ACTOR \
     --secret type=env,id=GITHUB_TOKEN,env=GITHUB_TOKEN \
-    -t sava-software/services/solana:latest .
+    -t glam-systems/look:latest .
 ```
 
 #### Create Lookup Table Cache Volume
@@ -246,23 +246,23 @@ docker build \
 Used to support faster restarts.
 
 ```shell
-docker volume create sava-solana-table-cache
+docker volume create look-table-cache
 
 docker run --rm -it \
   --user root \
-  --mount source=sava-solana-table-cache,target=/sava/.sava \
+  --mount source=look-table-cache,target=/look/.look \
   --entrypoint=ash \
-    sava-software/services/solana:latest
+    glam-systems/look:latest
     
-# Any disk writes needed at runtime will be stored within /sava/.sava
-chown sava /sava/.sava && chgrp nogroup /sava/.sava
+# Any disk writes needed at runtime will be stored within /look/.look
+chown glam /look/.look && chgrp nogroup /look/.look
 
 exit
 ```
 
 #### Run
 
-Mount your local service configuration file to `/sava/config.json`.
+Mount your local service configuration file to `/look/config.json`.
 
 Make sure the port you expose matches the port in your configuration file.
 
@@ -275,11 +275,11 @@ docker run --rm \
   --name table_service \
   --memory 13g \
   --publish 80:4242 \
-  --mount type=bind,source="$(pwd)"/solana/configs/LookupTableService.json,target=/sava/config.json,readonly \
-  --mount source=sava-solana-table-cache,target=/sava/.sava/solana/table_cache \
-    sava-software/services/solana:latest \
+  --mount type=bind,source="$(pwd)"/.config/look_service.json,target=/look/config.json,readonly \
+  --mount source=look-table-cache,target=/look/.look/table_cache \
+    glam-systems/look:latest \
       -server -XX:+UseZGC -Xms7G -Xmx12G \
-      -m "software.sava.solana_services/software.sava.services.solana.accounts.lookup.http.LookupTableWebService"
+      -m "systems.glam.look/systems.glam.look.http.LookupTableWebService"
 ```
 
 ### [Script Runner](../runService.sh)
@@ -304,10 +304,10 @@ Run the service:
 
 ```shell
 ./runService.sh \
-  --simpleProjectName="solana" \
-  --configFile="./solana/configs/LookupTableService.json" \
-  --moduleName="software.sava.solana_services" \
-  --mainClass="software.sava.services.solana.accounts.lookup.http.LookupTableWebService" \
+  --simpleProjectName="look" \
+  --configFile="./config/look_service.json" \
+  --moduleName="systems.glam.look" \
+  --mainClass="systems.glam.look.http.LookupTableWebService" \
   --jvmArgs="-server -XX:+UseZGC -Xms7G -Xmx13G" \
   --screen=0
 ```
