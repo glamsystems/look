@@ -1,0 +1,34 @@
+apply plugin: 'org.beryx.jlink'
+
+dependencies {
+  implementation libs.bouncycastle
+  implementation libs.json.iterator
+  implementation libs.sava.core
+  implementation libs.sava.rpc
+  implementation libs.sava.solana.web2
+  implementation libs.sava.solana.programs
+  implementation libs.sava.anchor.src.gen
+  implementation libs.sava.anchor.programs
+  implementation libs.sava.core.services
+  implementation libs.sava.solana.services
+  implementation libs.sava.jetty.services
+
+  implementation libs.jetty.server
+  implementation libs.jetty.http2.server
+  implementation libs.jetty.alpn.server
+  implementation libs.jetty.alpn.java.server
+  implementation libs.jetty.http3.server
+}
+
+afterEvaluate {
+  jlink {
+    imageName.set(project.name)
+    options.addAll(List.of(
+        '--bind-services',
+        '--no-man-pages',
+        '--no-header-files',
+        '--strip-debug',
+        '--ignore-signing-information'
+    ))
+  }
+}
