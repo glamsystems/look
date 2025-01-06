@@ -31,9 +31,9 @@ if [[ "$javaVersion" -ne "$targetJavaVersion" ]]; then
   exit 3
 fi
 
-./gradlew --exclude-task=test :liquid_stake_service:jlink -PnoVersionTag=true
+./gradlew --exclude-task=test :look:jlink -PnoVersionTag=true
 
-javaExe="$(pwd)/liquid_stake_service/build/liquid_stake_service/bin/java"
+javaExe="$(pwd)/look/build/look/bin/java"
 readonly javaExe
 
 echo "$javaExe"

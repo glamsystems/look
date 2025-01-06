@@ -2,11 +2,11 @@
 
 set -e
 
-simpleProjectName="liquid_stake_service"
-moduleName="systems.glam.liquid_stake_service"
-mainClass="systems.glam.services.liquid_stake.LiquidStakeService"
+simpleProjectName="look"
+moduleName="systems.glam.look"
+mainClass="systems.glam.look.http.LookupTableWebService"
 
-jvmArgs="-server -XX:+UseZGC -Xms512M -Xmx1G"
+jvmArgs="-server -XX:+UseZGC -Xms8G -Xmx13G"
 logLevel="INFO";
 configFile="";
 
