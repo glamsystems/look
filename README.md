@@ -1,7 +1,6 @@
-# Address Lookup Table Service
+# LOOK
 
-LOOK is a simple REST API that anyone can run to be able to POST a transaction or set of addresses and receive a set of
-table accounts that can be used to serialize a versioned transaction.
+A REST API that enables the discovery of existing lookup tables to help minimize the size of a transaction.
 
 ## REST API
 
@@ -214,7 +213,7 @@ RPC nodes.
 
 ## Run Table Service
 
-### [Docker](../Dockerfile)
+### Docker
 
 #### Build
 
@@ -260,8 +259,6 @@ Make sure the port you expose matches the port in your configuration file.
 
 Pass any JVM options you prefer to the container as well as the `-m module/main_class` you want to run.
 
-Note: Prefix image name with ghcr.io/ if you pulled from GitHub.
-
 ```shell
 docker run --rm \
   --name table_service \
@@ -274,7 +271,7 @@ docker run --rm \
       -m "systems.glam.look/systems.glam.look.http.LookupTableWebService"
 ```
 
-### [Script Runner](../runService.sh)
+### Run Script
 
 Compiles a minimal executable JVM and facilitates passing runtime arguments.
 
