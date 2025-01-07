@@ -216,14 +216,6 @@ RPC nodes.
 
 ### [Docker](../Dockerfile)
 
-#### Pull
-
-[Pull the image from the GitHub Container registry.](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pulling-container-images)
-
-```shell
-docker pull ghcr.io/glam-systems/look:latest
-```
-
 #### Build
 
 Creates an Alpine based image which includes a minimal executable JVM.
@@ -332,7 +324,7 @@ Create
 a [GitHub user access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
 with read access to GitHub Packages.
 
-Then add the following to your Gradle build script.
+Then add the following to your Gradle build script. Repeat credentials for each GitHub Package Repository dependency.
 
 ```groovy
 repositories {
@@ -345,31 +337,15 @@ repositories {
   }
   maven {
     url = "https://maven.pkg.github.com/sava-software/solana-programs"
-    credentials {
-      username = GITHUB_USERNAME
-      password = GITHUB_PERSONAL_ACCESS_TOKEN
-    }
   }
   maven {
     url = "https://maven.pkg.github.com/sava-software/anchor-src-gen"
-    credentials {
-      username = GITHUB_USERNAME
-      password = GITHUB_PERSONAL_ACCESS_TOKEN
-    }
   }
   maven {
     url = "https://maven.pkg.github.com/sava-software/anchor-programs"
-    credentials {
-      username = GITHUB_USERNAME
-      password = GITHUB_PERSONAL_ACCESS_TOKEN
-    }
   }
   maven {
     url = "https://maven.pkg.github.com/sava-software/services"
-    credentials {
-      username = GITHUB_USERNAME
-      password = GITHUB_PERSONAL_ACCESS_TOKEN
-    }
   }
 }
 
