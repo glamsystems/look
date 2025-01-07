@@ -67,7 +67,7 @@ record TableStatsRecord(Set<Set<PublicKey>> accountSets,
     final var numWithDuplicates = Arrays.stream(efficiencies).filter(e -> e < 1.0).count();
 
     final var numAccountStats = Arrays.stream(numAccounts).summaryStatistics();
-    final long medianNumAccounts = software.sava.services.solana.accounts.lookup.TableStats.median(numAccounts);
+    final long medianNumAccounts = TableStats.median(numAccounts);
 
     iterator = tableStats.values().iterator();
     for (int i = 0; i < numAccounts.length; ++i) {
@@ -82,7 +82,7 @@ record TableStatsRecord(Set<Set<PublicKey>> accountSets,
         tableStats.size(),
         duplicateAccountSets.sum(),
         numWithDuplicates,
-        efficiencyStats, software.sava.services.solana.accounts.lookup.TableStats.median(efficiencies),
+        efficiencyStats, TableStats.median(efficiencies),
         numAccountStats, medianNumAccounts,
         numUniqueAccountStats, TableStats.median(numAccounts)
     );

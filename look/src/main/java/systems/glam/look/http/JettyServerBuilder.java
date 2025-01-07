@@ -10,7 +10,7 @@ import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import software.sava.services.jetty.handlers.JettyHandler;
 import software.sava.services.jetty.handlers.RootJettyHandler;
-import systems.glam.look.LookupTableCache;
+import software.sava.services.solana.alt.LookupTableCache;
 import systems.glam.look.LookupTableDiscoveryService;
 import systems.glam.look.LookupTableServiceConfig;
 

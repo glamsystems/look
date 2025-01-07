@@ -11,7 +11,7 @@ import software.sava.core.accounts.meta.LookupTableAccountMeta;
 import software.sava.core.tx.Instruction;
 import software.sava.core.tx.Transaction;
 import software.sava.core.tx.TransactionSkeleton;
-import systems.glam.look.LookupTableCache;
+import software.sava.services.solana.alt.LookupTableCache;
 import systems.glam.look.LookupTableDiscoveryService;
 
 import java.util.*;

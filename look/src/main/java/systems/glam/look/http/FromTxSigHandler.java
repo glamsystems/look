@@ -6,7 +6,7 @@ import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Callback;
 import software.sava.services.core.remote.call.Call;
 import software.sava.services.core.request_capacity.context.CallContext;
-import systems.glam.look.LookupTableCache;
+import software.sava.services.solana.alt.LookupTableCache;
 import systems.glam.look.LookupTableDiscoveryService;
 
 import java.io.IOException;

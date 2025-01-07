@@ -6,6 +6,7 @@ import software.sava.core.tx.Instruction;
 import software.sava.core.tx.Transaction;
 import software.sava.services.core.remote.call.Call;
 import software.sava.services.core.request_capacity.context.CallContext;
+import software.sava.services.solana.alt.CachedAddressLookupTable;
 import software.sava.solana.programs.clients.NativeProgramClient;
 
 import java.nio.file.Files;

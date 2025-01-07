@@ -8,7 +8,7 @@ import org.eclipse.jetty.util.Callback;
 import software.sava.rpc.json.http.client.SolanaRpcClient;
 import software.sava.services.core.remote.load_balance.LoadBalancer;
 import software.sava.services.jetty.handlers.BaseJettyHandler;
-import systems.glam.look.LookupTableCache;
+import software.sava.services.solana.alt.LookupTableCache;
 import systems.glam.look.LookupTableDiscoveryService;
 
 abstract class LookupTableDiscoveryServiceHandler extends BaseJettyHandler {

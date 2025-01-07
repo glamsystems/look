@@ -6,8 +6,8 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.VirtualThreadPool;
 import software.sava.core.accounts.lookup.AddressLookupTable;
 import software.sava.services.jetty.handlers.JettyHandler;
+import software.sava.services.solana.alt.LookupTableCache;
 import software.sava.solana.programs.clients.NativeProgramClient;
-import systems.glam.look.LookupTableCache;
 import systems.glam.look.LookupTableDiscoveryService;
 import systems.glam.look.LookupTableServiceConfig;
 

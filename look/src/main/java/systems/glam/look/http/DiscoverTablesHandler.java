@@ -5,7 +5,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Callback;
 import software.sava.core.accounts.lookup.AddressLookupTable;
-import systems.glam.look.LookupTableCache;
+import software.sava.services.solana.alt.LookupTableCache;
 import systems.glam.look.LookupTableDiscoveryService;
 
 import static java.lang.System.Logger.Level.INFO;
