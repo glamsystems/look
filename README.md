@@ -1,12 +1,10 @@
 # LOOK
 
-A REST API that enables the discovery of existing lookup tables to help minimize the size of a transaction.
+Discover existing lookup tables to minimize the size of a transaction.
 
 ## REST API
 
 ### Discover Tables
-
-Attempts to find one or more tables to help minimize the size of a transaction.
 
 #### `/v0/alt/discover/*`
 

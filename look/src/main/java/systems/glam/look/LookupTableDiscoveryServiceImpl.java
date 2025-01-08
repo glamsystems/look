@@ -73,7 +73,6 @@ final class LookupTableDiscoveryServiceImpl implements LookupTableDiscoveryServi
   private final CompletableFuture<Void> remoteLoad;
   private final int maxConcurrentRequests;
   private final TableStats tableStats;
-  TableStatsSummary tableStatsSummary;
   final AtomicReferenceArray<AddressLookupTable[]> partitions;
   private final PartitionedLookupTableCallHandler[] partitionedCallHandlers;
   private final Path altCacheDirectory;
@@ -671,7 +670,6 @@ final class LookupTableDiscoveryServiceImpl implements LookupTableDiscoveryServi
         final var duration = Duration.ofMillis(System.currentTimeMillis() - start);
 
         joinPartitions();
-        this.tableStatsSummary = tableStats.summarize();
 
         initialized.complete(null);
         remoteLoad.complete(null);
@@ -683,7 +681,6 @@ final class LookupTableDiscoveryServiceImpl implements LookupTableDiscoveryServi
         logger.log(INFO, String.format("""
             %s to fetch all %d tables.""", duration, numTables
         ));
-
 
         logger.log(INFO, tableStats);
         tableStats.reset();
