@@ -4,6 +4,7 @@ import software.sava.rpc.json.http.client.SolanaRpcClient;
 import software.sava.services.core.config.NetConfig;
 import software.sava.services.core.remote.load_balance.LoadBalancer;
 import software.sava.services.core.remote.load_balance.LoadBalancerConfig;
+import software.sava.services.solana.alt.TableCacheConfig;
 import software.sava.services.solana.remote.call.CallWeights;
 import systems.comodal.jsoniter.FieldBufferPredicate;
 import systems.comodal.jsoniter.JsonIterator;
@@ -316,51 +317,4 @@ public record LookupTableServiceConfig(Path workDir,
     }
   }
 
-  public record TableCacheConfig(int initialCapacity,
-                                 Duration refreshStaleItemsDelay,
-                                 Duration consideredStale) {
-
-    private static final int DEFAULT_INITIAL_CAPACITY = 1_024;
-    private static final Duration DEFAULT_CONSIDERED_STALE = Duration.ofHours(8);
-
-    private static TableCacheConfig parse(final JsonIterator ji) {
-      final var parser = new Builder();
-      ji.testObject(parser);
-      return parser.create();
-    }
-
-    private static final class Builder implements FieldBufferPredicate {
-
-      private int initialCapacity = DEFAULT_INITIAL_CAPACITY;
-      private Duration refreshStaleItemsDelay;
-      private Duration consideredStale = DEFAULT_CONSIDERED_STALE;
-
-      private Builder() {
-      }
-
-      private TableCacheConfig create() {
-        return new TableCacheConfig(
-            initialCapacity,
-            refreshStaleItemsDelay == null
-                ? consideredStale.dividedBy(2)
-                : refreshStaleItemsDelay,
-            consideredStale
-        );
-      }
-
-      @Override
-      public boolean test(final char[] buf, final int offset, final int len, final JsonIterator ji) {
-        if (fieldEquals("initialCapacity", buf, offset, len)) {
-          initialCapacity = ji.readInt();
-        } else if (fieldEquals("refreshStaleItemsDelay", buf, offset, len)) {
-          refreshStaleItemsDelay = parseDuration(ji);
-        } else if (fieldEquals("consideredStale", buf, offset, len)) {
-          consideredStale = parseDuration(ji);
-        } else {
-          ji.skip();
-        }
-        return true;
-      }
-    }
-  }
 }

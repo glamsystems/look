@@ -4,7 +4,6 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.VirtualThreadPool;
-import software.sava.core.accounts.lookup.AddressLookupTable;
 import software.sava.services.jetty.handlers.JettyHandler;
 import software.sava.services.solana.alt.LookupTableCache;
 import software.sava.solana.programs.clients.NativeProgramClient;
@@ -73,8 +72,7 @@ public final class LookupTableWebService {
       final var tableCache = LookupTableCache.createCache(
           executor,
           tableCacheConfig.initialCapacity(),
-          serviceConfig.rpcClients(),
-          AddressLookupTable.FACTORY
+          serviceConfig.rpcClients()
       );
 
       final var server = buildServer(serviceConfig, tableService, tableCache);
