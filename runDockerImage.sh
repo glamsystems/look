@@ -7,7 +7,7 @@ mainClass="systems.glam.look.http.LookupTableWebService"
 
 dockerImageName="glam-systems/look:latest"
 dockerRunFlags="--detach --name look --memory 12g --publish 4242:4242"
-jvmArgs="-server -XX:+UseCompressedOops -Xms8G -Xmx11G"
+jvmArgs="-server -XX:+UseCompressedOops -XX:+UseShenandoahGC -Xms8G -Xmx11G"
 logLevel="INFO"
 configDirectory="$(pwd)/.config"
 configFileName=""
@@ -52,6 +52,9 @@ done
 
 IFS=' ' read -r -a dockerRunFlagArray <<< "$dockerRunFlags"
 IFS=' ' read -r -a jvmArgsArray <<< "$jvmArgs"
+
+docker stop look
+docker rm look
 
 set -x
 docker run "${dockerRunFlagArray[@]}" \

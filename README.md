@@ -257,7 +257,7 @@ Make sure the port you expose matches the port in your configuration file.
 
 * dockerImageName="glam-systems/look:latest"
 * dockerRunFlags="--detach --name look --memory 12g --publish 4242:4242"
-* jvmArgs="-server -XX:+UseCompressedOops -Xms8G -Xmx11G"
+* jvmArgs="-server -XX:+UseCompressedOops -XX:+UseShenandoahGC -Xms8G -Xmx11G"
 * logLevel="INFO"
 * configDirectory="$(pwd)/.config"
 * configFileName=""
