@@ -71,7 +71,7 @@ Reference the documentation below for anything that is not implicitly clear and 
   "workDir": "./",
   "discovery": {
     "cacheOnly": false,
-    "cacheDirectory": "/Users/user/src/services/solana/alt_cache",
+    "cacheDirectory": ".look/table_cache",
     "clearCache": false,
     "remoteLoad": {
       "minUniqueAccountsPerTable": 34,
