@@ -235,11 +235,11 @@ docker build \
 Used to support faster restarts.
 
 ```shell
-docker volume create look-table-cache
+docker volume create look_table_cache
 
 docker run --rm -it \
   --user root \
-  --mount source=look-table-cache,target=/look/.look \
+  --mount source=look_table_cache,target=/look/.look \
   --entrypoint=ash \
     glam-systems/look:latest
     
@@ -251,8 +251,6 @@ exit
 
 #### Run
 
-Mount your local service configuration file to `/look/config.json`.
-
 Make sure the port you expose matches the port in your configuration file.
 
 Pass any JVM options you prefer to the container as well as the `-m module/main_class` you want to run.
@@ -261,11 +259,12 @@ Pass any JVM options you prefer to the container as well as the `-m module/main_
 docker run --rm \
   --name table_service \
   --memory 13g \
-  --publish 80:4242 \
-  --mount type=bind,source="$(pwd)"/.config/look_service.json,target=/look/config.json,readonly \
-  --mount source=look-table-cache,target=/look/.look/table_cache \
+  --publish 4242:4242 \
+  --mount type=bind,source="$(pwd)"/.config/look_service.json,target=/look/.config/look_service.json,readonly \
+  --mount source=look_table_cache,target=/look/.look/table_cache \
     glam-systems/look:latest \
-      -server -XX:+UseZGC -Xms7G -Xmx12G \
+      -server -XX:+UseCompressedOops -Xms4G -Xmx12G \
+      "-Dsystems.glam.look.config=/look/.config/look_service.json" \
       -m "systems.glam.look/systems.glam.look.http.LookupTableWebService"
 ```
 
@@ -296,14 +295,5 @@ Run the service:
   --moduleName="systems.glam.look" \
   --mainClass="systems.glam.look.http.LookupTableWebService" \
   --jvmArgs="-server -XX:+UseZGC -Xms7G -Xmx13G" \
-  --screen=0
-  
-  
-./runService.sh \
-  --simpleProjectName="look" \
-  --configFile="./.config/look_service.json" \
-  --moduleName="systems.glam.look" \
-  --mainClass="systems.glam.look.http.LookupTableWebService" \
-  --jvmArgs="-server -XX:+UseCompressedOops -Xms4G -Xmx12G" \
   --screen=0
 ```

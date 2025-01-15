@@ -32,3 +32,4 @@ ignore
 /governance/
 .config
 /vote/.vote/
+/.look/

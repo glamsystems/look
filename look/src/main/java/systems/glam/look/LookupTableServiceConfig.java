@@ -51,7 +51,8 @@ public record LookupTableServiceConfig(Path workDir,
       if (!Files.exists(serviceConfigFile)) {
         throw new IllegalStateException(String.format("""
             Provide a service configuration file via the System Property [%s], or via the default location [config.json]
-            """, moduleNameConfigProperty));
+            """, moduleNameConfigProperty
+        ));
       }
     } else {
       serviceConfigFile = Path.of(propertyValue);
