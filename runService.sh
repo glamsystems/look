@@ -2,6 +2,7 @@
 
 set -e
 
+readonly targetJavaVersion=23
 simpleProjectName="look"
 moduleName="systems.glam.look"
 mainClass="systems.glam.look.http.LookupTableWebService"
@@ -59,6 +60,15 @@ do
     exit 1;
   fi
 done
+
+javaVersion=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | grep -oEi '^[0-9]+')
+readonly javaVersion
+if [[ "$javaVersion" -ne "$targetJavaVersion" ]]; then
+  echo "Invalid Java version $javaVersion must be $targetJavaVersion."
+  exit 3
+fi
+
+./gradlew --exclude-task=test :"$simpleProjectName":jlink -PnoVersionTag=true
 
 javaExe="$(pwd)/$simpleProjectName/build/$simpleProjectName/bin/java"
 readonly javaExe

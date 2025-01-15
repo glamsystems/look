@@ -292,9 +292,18 @@ Run the service:
 ```shell
 ./runService.sh \
   --simpleProjectName="look" \
-  --configFile="./config/look_service.json" \
+  --configFile="./.config/look_service.json" \
   --moduleName="systems.glam.look" \
   --mainClass="systems.glam.look.http.LookupTableWebService" \
   --jvmArgs="-server -XX:+UseZGC -Xms7G -Xmx13G" \
+  --screen=0
+  
+  
+./runService.sh \
+  --simpleProjectName="look" \
+  --configFile="./.config/look_service.json" \
+  --moduleName="systems.glam.look" \
+  --mainClass="systems.glam.look.http.LookupTableWebService" \
+  --jvmArgs="-server -XX:+UseCompressedOops -Xms4G -Xmx12G" \
   --screen=0
 ```
