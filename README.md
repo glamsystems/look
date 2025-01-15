@@ -253,19 +253,17 @@ exit
 
 Make sure the port you expose matches the port in your configuration file.
 
-Pass any JVM options you prefer to the container as well as the `-m module/main_class` you want to run.
+##### Args
+
+* dockerImageName="glam-systems/look:latest"
+* dockerRunFlags="--detach --name look --memory 12g --publish 4242:4242"
+* jvmArgs="-server -XX:+UseCompressedOops -Xms8G -Xmx11G"
+* logLevel="INFO"
+* configDirectory="$(pwd)/.config"
+* configFileName=""
 
 ```shell
-docker run --rm \
-  --name table_service \
-  --memory 13g \
-  --publish 4242:4242 \
-  --mount type=bind,source="$(pwd)"/.config/look_service.json,target=/look/.config/look_service.json,readonly \
-  --mount source=look_table_cache,target=/look/.look/table_cache \
-    glam-systems/look:latest \
-      -server -XX:+UseCompressedOops -Xms4G -Xmx12G \
-      "-Dsystems.glam.look.config=/look/.config/look_service.json" \
-      -m "systems.glam.look/systems.glam.look.http.LookupTableWebService"
+./runDockerImage.sh --configFileName=look_service.json
 ```
 
 ### Run Script
