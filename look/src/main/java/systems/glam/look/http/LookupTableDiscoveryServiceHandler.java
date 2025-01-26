@@ -11,6 +11,8 @@ import software.sava.services.jetty.handlers.BaseJettyHandler;
 import software.sava.services.solana.alt.LookupTableCache;
 import systems.glam.look.LookupTableDiscoveryService;
 
+import static software.sava.services.jetty.handlers.HandlerUtil.ALLOW_POST;
+
 abstract class LookupTableDiscoveryServiceHandler extends BaseJettyHandler {
 
   protected final LookupTableDiscoveryService tableService;
@@ -20,7 +22,7 @@ abstract class LookupTableDiscoveryServiceHandler extends BaseJettyHandler {
   LookupTableDiscoveryServiceHandler(final InvocationType invocationType,
                                      final LookupTableDiscoveryService tableService,
                                      final LookupTableCache tableCache) {
-    super(invocationType, BaseJettyHandler.ALLOW_POST);
+    super(invocationType, ALLOW_POST);
     this.tableService = tableService;
     this.tableCache = tableCache;
     this.rpcClients = tableCache.rpcClients();

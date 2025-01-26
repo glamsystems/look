@@ -27,7 +27,6 @@ afterEvaluate {
         '--bind-services',
         '--no-man-pages',
         '--no-header-files',
-        '--strip-debug',
         '--ignore-signing-information'
     ))
   }

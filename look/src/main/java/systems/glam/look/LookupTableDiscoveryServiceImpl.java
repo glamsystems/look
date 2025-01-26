@@ -620,12 +620,16 @@ final class LookupTableDiscoveryServiceImpl implements LookupTableDiscoveryServi
               }
               partitions.set(partition, tables);
               return tables;
-            } else {
-              return new AddressLookupTable[0];
             }
           } catch (final IOException e) {
-            throw new UncheckedIOException(e);
+            try {
+              Files.delete(cacheFile);
+            } catch (final IOException ex) {
+              throw new UncheckedIOException(e);
+            }
+            logger.log(WARNING, "Deleted corrupted cache partition file " + cacheFile);
           }
+          return new AddressLookupTable[0];
         })
         .<AddressLookupTable>mapMulti((tables, downstream) -> {
           for (final var table : tables) {

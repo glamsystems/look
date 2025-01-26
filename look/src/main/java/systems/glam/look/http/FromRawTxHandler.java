@@ -17,6 +17,8 @@ import systems.glam.look.LookupTableDiscoveryService;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static software.sava.services.jetty.handlers.HandlerUtil.JSON_CONTENT;
+
 class FromRawTxHandler extends DiscoverTablesHandler {
 
   private static final System.Logger logger = System.getLogger(FromRawTxHandler.class.getName());
