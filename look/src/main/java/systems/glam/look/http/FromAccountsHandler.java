@@ -11,7 +11,10 @@ import software.sava.services.solana.alt.LookupTableCache;
 import systems.comodal.jsoniter.JsonIterator;
 import systems.glam.look.LookupTableDiscoveryService;
 
+import java.io.IOException;
 import java.util.HashSet;
+
+import static software.sava.services.jetty.handlers.HandlerUtil.JSON_CONTENT;
 
 final class FromAccountsHandler extends DiscoverTablesHandler {
 
@@ -28,18 +31,26 @@ final class FromAccountsHandler extends DiscoverTablesHandler {
     super.setResponseHeaders(response);
     final var queryParams = queryParams(request);
 
-    final var body = Content.Source.asByteArrayAsync(request, MAX_BODY_LENGTH).join();
-    final var ji = JsonIterator.parse(body);
-    final var distinctAccounts = HashSet.<PublicKey>newHashSet(Transaction.MAX_ACCOUNTS);
-    while (ji.readArray()) {
-      distinctAccounts.add(PublicKeyEncoding.parseBase58Encoded(ji));
-    }
+    try (final var is = Content.Source.asInputStream(request)) {
+      final var body = is.readAllBytes();
+      final var ji = JsonIterator.parse(body);
+      final var distinctAccounts = HashSet.<PublicKey>newHashSet(Transaction.MAX_ACCOUNTS);
+      while (ji.readArray()) {
+        distinctAccounts.add(PublicKeyEncoding.parseBase58Encoded(ji));
+      }
 
-    final long start = System.currentTimeMillis();
-    final var lookupTables = queryParams.reRank()
-        ? tableService.discoverTablesWithReRank(distinctAccounts)
-        : tableService.discoverTables(distinctAccounts);
-    writeResponse(response, callback, startExchange, queryParams, start, lookupTables);
-    return true;
+      final long start = System.currentTimeMillis();
+      final var lookupTables = queryParams.reRank()
+          ? tableService.discoverTablesWithReRank(distinctAccounts)
+          : tableService.discoverTables(distinctAccounts);
+      writeResponse(response, callback, startExchange, queryParams, start, lookupTables);
+      return true;
+    } catch (final IOException ex) {
+      response.setStatus(400);
+      response.getHeaders().put(JSON_CONTENT);
+      Content.Sink.write(response, true, """
+          {"msg": "Failed to read request body."}""", callback);
+      return true;
+    }
   }
 }

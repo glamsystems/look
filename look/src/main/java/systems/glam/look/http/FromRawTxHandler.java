@@ -14,6 +14,7 @@ import software.sava.core.tx.TransactionSkeleton;
 import software.sava.services.solana.alt.LookupTableCache;
 import systems.glam.look.LookupTableDiscoveryService;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,7 +75,8 @@ class FromRawTxHandler extends DiscoverTablesHandler {
     }
 
     String toJson() {
-      return String.format("""
+      return String.format(
+          """
               {
                 "numEligible": %d,
                 "inNetIndexed": %d,
@@ -103,7 +105,8 @@ class FromRawTxHandler extends DiscoverTablesHandler {
 
 
     String toJson() {
-      return String.format("""
+      return String.format(
+          """
               {
                 "address": "%s",
                 "numIndexed": %d,
@@ -163,7 +166,14 @@ class FromRawTxHandler extends DiscoverTablesHandler {
         final var tableStats = tableStats(eligible, table);
         tableStatsList = List.of(tableStats);
         final var newTx = Transaction.createTx(feePayer, instructionsList, table);
-        return TxStats.createStats(eligible, skeleton.numIndexedAccounts(), indexed, tableStatsList, txBytes, newTx.serialized());
+        return TxStats.createStats(
+            eligible,
+            skeleton.numIndexedAccounts(),
+            indexed,
+            tableStatsList,
+            txBytes,
+            newTx.serialized()
+        );
       } else {
         final var tableStats = new TableStats[numTablesFound];
         for (int i = 0; i < numTablesFound; ++i) {
@@ -177,7 +187,14 @@ class FromRawTxHandler extends DiscoverTablesHandler {
             .map(LookupTableAccountMeta::createMeta)
             .toArray(LookupTableAccountMeta[]::new);
         final var newTx = Transaction.createTx(feePayer, instructionsList, tableAccountMetas);
-        return TxStats.createStats(eligible, skeleton.numIndexedAccounts(), indexed, tableStatsList, txBytes, newTx.serialized());
+        return TxStats.createStats(
+            eligible,
+            skeleton.numIndexedAccounts(),
+            indexed,
+            tableStatsList,
+            txBytes,
+            newTx.serialized()
+        );
       }
     }
   }
@@ -201,7 +218,14 @@ class FromRawTxHandler extends DiscoverTablesHandler {
           : tableService.discoverTables(accounts, programs);
 
       if (queryParams.stats()) {
-        final var txStats = produceStats(txBytes, skeleton, accounts, programs, skeleton.parseLegacyInstructions(), discoveredTables);
+        final var txStats = produceStats(
+            txBytes,
+            skeleton,
+            accounts,
+            programs,
+            skeleton.parseLegacyInstructions(),
+            discoveredTables
+        );
         writeResponse(response, callback, startExchange, queryParams, start, discoveredTables, txStats);
       } else {
         writeResponse(response, callback, startExchange, queryParams, start, discoveredTables);
@@ -284,10 +308,14 @@ class FromRawTxHandler extends DiscoverTablesHandler {
             for (final var key : lookupTableAccounts) {
               if (!lookupTables.containsKey(key)) {
                 response.setStatus(400);
-                Content.Sink.write(response, true, String.format("""
-                    {
-                      "msg": "Failed to find address lookup table %s."
-                    }""", key), callback);
+                Content.Sink.write(
+                    response, true, String.format(
+                        """
+                            {
+                              "msg": "Failed to find address lookup table %s."
+                            }""", key
+                    ), callback
+                );
                 return;
               }
             }
@@ -311,17 +339,28 @@ class FromRawTxHandler extends DiscoverTablesHandler {
               .map(Instruction::programId)
               .map(AccountMeta::publicKey)
               .toArray(PublicKey[]::new);
-          final var txStats = produceStats(txBytes, skeleton, nonSignerAccounts, programs, instructions, discoveredTables);
+          final var txStats = produceStats(
+              txBytes,
+              skeleton,
+              nonSignerAccounts,
+              programs,
+              instructions,
+              discoveredTables
+          );
           writeResponse(response, callback, startExchange, queryParams, start, discoveredTables, txStats);
         } else {
           writeResponse(response, callback, startExchange, queryParams, start, discoveredTables);
         }
       } else {
         response.setStatus(400);
-        Content.Sink.write(response, true, String.format("""
-            {
-              "msg": "Unsupported transaction version %d."
-            }""", txVersion), callback);
+        Content.Sink.write(
+            response, true, String.format(
+                """
+                    {
+                      "msg": "Unsupported transaction version %d."
+                    }""", txVersion
+            ), callback
+        );
       }
     }
   }
@@ -337,19 +376,30 @@ class FromRawTxHandler extends DiscoverTablesHandler {
   public boolean handle(final Request request, final Response response, final Callback callback) {
     final long startExchange = System.currentTimeMillis();
     setResponseHeaders(response);
-    final var body = Content.Source.asByteArrayAsync(request, Transaction.MAX_SERIALIZED_LENGTH << 1).join();
-    try {
-      final var encoding = getEncoding(request, response, callback);
-      if (encoding != null) {
-        final byte[] txBytes = encoding.decode(body);
-        handle(request, response, callback, startExchange, txBytes);
+    try (final var is = Content.Source.asInputStream(request)) {
+      final var body = is.readAllBytes();
+      try {
+        final var encoding = getEncoding(request, response, callback);
+        if (encoding != null) {
+          final byte[] txBytes = encoding.decode(body);
+          handle(request, response, callback, startExchange, txBytes);
+        }
+      } catch (final RuntimeException ex) {
+        final var bodyString = new String(body);
+        logger.log(System.Logger.Level.ERROR, "Failed to process request " + bodyString, ex);
+        response.setStatus(500);
+        callback.failed(ex);
       }
-    } catch (final RuntimeException ex) {
-      final var bodyString = new String(body);
-      logger.log(System.Logger.Level.ERROR, "Failed to process request " + bodyString, ex);
-      response.setStatus(500);
-      callback.failed(ex);
+      return true;
+    } catch (final IOException ex) {
+      response.setStatus(400);
+      response.getHeaders().put(JSON_CONTENT);
+      Content.Sink.write(
+          response, true, """
+              {"msg": "Failed to read request body."}""",
+          callback
+      );
+      return true;
     }
-    return true;
   }
 }
