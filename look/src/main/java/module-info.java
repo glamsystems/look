@@ -8,9 +8,9 @@ module systems.glam.look {
   requires software.sava.solana_programs;
   requires software.sava.solana_web2;
   requires software.sava.anchor_programs;
-  requires software.sava.core_services;
-  requires software.sava.jetty_services;
-  requires software.sava.solana_services;
+  requires software.sava.ravina_core;
+  requires software.sava.ravina_jetty;
+  requires software.sava.ravina_solana;
 
   requires org.eclipse.jetty.server;
   requires org.eclipse.jetty.http2.server;
