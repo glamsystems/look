@@ -251,7 +251,7 @@ class FromRawTxHandler extends DiscoverTablesHandler {
               final var cachedTable = tableCache.getTable(key);
               if (cachedTable == null) {
                 lookupTable = lookupTable.withReverseLookup();
-                tableCache.putTable(lookupTable);
+                tableCache.mergeTable(0, lookupTable);
               } else {
                 lookupTable = cachedTable;
               }
