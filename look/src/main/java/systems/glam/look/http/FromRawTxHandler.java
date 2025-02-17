@@ -12,6 +12,7 @@ import software.sava.core.tx.Instruction;
 import software.sava.core.tx.Transaction;
 import software.sava.core.tx.TransactionSkeleton;
 import software.sava.services.solana.alt.LookupTableCache;
+import software.sava.services.solana.remote.call.RpcCaller;
 import systems.glam.look.LookupTableDiscoveryService;
 
 import java.io.IOException;
@@ -26,16 +27,18 @@ class FromRawTxHandler extends DiscoverTablesHandler {
 
   FromRawTxHandler(final InvocationType invocationType,
                    final LookupTableDiscoveryService tableService,
-                   final LookupTableCache tableCache) {
-    super(invocationType, tableService, tableCache);
+                   final LookupTableCache tableCache,
+                   final RpcCaller rpcCaller) {
+    super(invocationType, tableService, tableCache, rpcCaller);
   }
 
   FromRawTxHandler(final LookupTableDiscoveryService tableService,
-                   final LookupTableCache tableCache) {
-    this(InvocationType.EITHER, tableService, tableCache);
+                   final LookupTableCache tableCache,
+                   final RpcCaller rpcCaller) {
+    this(InvocationType.EITHER, tableService, tableCache, rpcCaller);
   }
 
-  record TxStats(int numEligible,
+  record TxStats(Set<PublicKey> eligible,
                  int inNetIndexed,
                  int outNetIndexed,
                  int inTxLength,
@@ -45,9 +48,9 @@ class FromRawTxHandler extends DiscoverTablesHandler {
 
     private static final List<TableStats> NONE_FOUND = List.of();
 
-    static TxStats noneFound(final int numEligible, final int inNetIndexed, final int inTxLength) {
+    static TxStats noneFound(final Set<PublicKey> eligible, final int inNetIndexed, final int inTxLength) {
       return new TxStats(
-          numEligible,
+          eligible,
           inNetIndexed,
           0,
           inTxLength,
@@ -64,7 +67,7 @@ class FromRawTxHandler extends DiscoverTablesHandler {
                                final byte[] oldTxData,
                                final byte[] newTxData) {
       return new TxStats(
-          eligible.size(),
+          eligible,
           inNetIndexed,
           indexed.size(),
           oldTxData.length,
@@ -78,7 +81,7 @@ class FromRawTxHandler extends DiscoverTablesHandler {
       return String.format(
           """
               {
-                "numEligible": %d,
+                "eligible": ["%s"],
                 "inNetIndexed": %d,
                 "outNetIndexed": %d,
                 "inTxLength": %d,
@@ -88,7 +91,7 @@ class FromRawTxHandler extends DiscoverTablesHandler {
                 %s
                 ]
               }""",
-          numEligible,
+          eligible.stream().map(PublicKey::toBase58).collect(Collectors.joining("\",\"")),
           inNetIndexed, outNetIndexed,
           inTxLength, outTxLength,
           delta,
@@ -156,7 +159,7 @@ class FromRawTxHandler extends DiscoverTablesHandler {
     }
 
     if (numTablesFound == 0) {
-      return TxStats.noneFound(eligible.size(), skeleton.numIndexedAccounts(), txBytes.length);
+      return TxStats.noneFound(eligible, skeleton.numIndexedAccounts(), txBytes.length);
     } else {
       final var feePayer = skeleton.feePayer();
       final var instructionsList = Arrays.asList(instructions);
@@ -246,7 +249,6 @@ class FromRawTxHandler extends DiscoverTablesHandler {
                 notCached = new ArrayList<>(numTableAccounts);
               }
               notCached.add(key);
-              continue;
             } else {
               final var cachedTable = tableCache.getTable(key);
               if (cachedTable == null) {
@@ -255,8 +257,8 @@ class FromRawTxHandler extends DiscoverTablesHandler {
               } else {
                 lookupTable = cachedTable;
               }
+              lookupTables.put(lookupTable.address(), lookupTable);
             }
-            lookupTables.put(lookupTable.address(), lookupTable);
           }
         } else {
           for (final var key : lookupTableAccounts) {

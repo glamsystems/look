@@ -13,6 +13,7 @@ import systems.glam.look.LookupTableServiceConfig;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.ServerSocketChannel;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static java.lang.System.Logger.Level.ERROR;
@@ -43,7 +44,8 @@ public final class LookupTableWebService {
     );
   }
 
-  private static Server buildServer(final LookupTableServiceConfig serviceConfig,
+  private static Server buildServer(final ExecutorService executorService,
+                                    final LookupTableServiceConfig serviceConfig,
                                     final LookupTableDiscoveryService tableService,
                                     final LookupTableCache tableCache) {
     final var builder = serverBuilder(serviceConfig);
@@ -51,7 +53,7 @@ public final class LookupTableWebService {
     builder.initHttp();
     builder.initHttps();
 
-    builder.addHandlers(tableService, tableCache);
+    builder.addHandlers(executorService, serviceConfig.callWeights(), tableService, tableCache);
 
     return builder.server();
   }
@@ -75,7 +77,7 @@ public final class LookupTableWebService {
           serviceConfig.rpcClients()
       );
 
-      final var server = buildServer(serviceConfig, tableService, tableCache);
+      final var server = buildServer(executor, serviceConfig, tableService, tableCache);
       tableService.initializedFuture().join();
       server.start();
 

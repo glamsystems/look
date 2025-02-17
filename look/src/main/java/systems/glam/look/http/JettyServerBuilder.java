@@ -11,6 +11,8 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import software.sava.services.jetty.handlers.JettyHandler;
 import software.sava.services.jetty.handlers.RootJettyHandler;
 import software.sava.services.solana.alt.LookupTableCache;
+import software.sava.services.solana.remote.call.CallWeights;
+import software.sava.services.solana.remote.call.RpcCaller;
 import systems.glam.look.LookupTableDiscoveryService;
 import systems.glam.look.LookupTableServiceConfig;
 
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 public final class JettyServerBuilder {
 
@@ -120,10 +123,19 @@ public final class JettyServerBuilder {
     addSecureConnector(h3Connector);
   }
 
-  void addHandlers(final LookupTableDiscoveryService tableService, final LookupTableCache tableCache) {
-    addHandler(handlers, "/v0/alt/discover/tx/sig", new FromTxSigHandler(tableService, tableCache));
-    addHandler(handlers, "/v0/alt/discover/tx/raw", new FromRawTxHandler(tableService, tableCache));
-    addHandler(handlers, "/v0/alt/discover/accounts", new FromAccountsHandler(tableService, tableCache));
+  void addHandlers(final ExecutorService executorService,
+                   final CallWeights callWeights,
+                   final LookupTableDiscoveryService tableService,
+                   final LookupTableCache tableCache) {
+    final var rpcCaller = new RpcCaller(
+        executorService,
+        tableCache.rpcClients(),
+        callWeights
+    );
+    addHandler(handlers, "/v0/alt/discover/tx/sig", new FromTxSigHandler(tableService, tableCache, rpcCaller));
+    addHandler(handlers, "/v0/alt/discover/tx/raw", new FromRawTxHandler(tableService, tableCache, rpcCaller));
+    addHandler(handlers, "/v0/alt/discover/nonSignerAccounts", new FromAccountsHandler(tableService, tableCache, rpcCaller));
+    addHandler(handlers, "/v0/alt/recommend/accounts", new TableRecommendationHandler(tableService, tableCache, rpcCaller));
 
     final var rootHandler = new RootJettyHandler(
         Map.copyOf(handlers),

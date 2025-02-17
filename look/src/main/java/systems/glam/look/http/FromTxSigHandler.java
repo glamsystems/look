@@ -4,9 +4,9 @@ import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Callback;
-import software.sava.services.core.remote.call.Call;
 import software.sava.services.core.request_capacity.context.CallContext;
 import software.sava.services.solana.alt.LookupTableCache;
+import software.sava.services.solana.remote.call.RpcCaller;
 import systems.glam.look.LookupTableDiscoveryService;
 
 import java.io.IOException;
@@ -18,8 +18,9 @@ final class FromTxSigHandler extends FromRawTxHandler {
   private static final System.Logger logger = System.getLogger(FromRawTxHandler.class.getName());
 
   FromTxSigHandler(final LookupTableDiscoveryService tableService,
-                   final LookupTableCache tableCache) {
-    super(InvocationType.BLOCKING, tableService, tableCache);
+                   final LookupTableCache tableCache,
+                   final RpcCaller rpcCaller) {
+    super(InvocationType.BLOCKING, tableService, tableCache, rpcCaller);
   }
 
   @Override
@@ -29,11 +30,11 @@ final class FromTxSigHandler extends FromRawTxHandler {
     try {
       final var txSig = Content.Source.asString(request);
       try {
-        final var txBytes = Call.createCourteousCall(
-            rpcClients, rpcClient -> rpcClient.getTransaction(CONFIRMED, txSig),
+        final var txBytes = rpcCaller.courteousGet(
+            rpcClient -> rpcClient.getTransaction(CONFIRMED, txSig),
             CallContext.DEFAULT_CALL_CONTEXT,
             "rpcClient::getTransaction"
-        ).get().data();
+        ).data();
         // System.out.println(Base64.getEncoder().encodeToString(txBytes));
         handle(request, response, callback, startExchange, txBytes);
       } catch (final RuntimeException ex) {

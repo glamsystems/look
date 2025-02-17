@@ -8,6 +8,7 @@ import software.sava.core.accounts.PublicKey;
 import software.sava.core.tx.Transaction;
 import software.sava.rpc.json.PublicKeyEncoding;
 import software.sava.services.solana.alt.LookupTableCache;
+import software.sava.services.solana.remote.call.RpcCaller;
 import systems.comodal.jsoniter.JsonIterator;
 import systems.glam.look.LookupTableDiscoveryService;
 
@@ -21,8 +22,9 @@ final class FromAccountsHandler extends DiscoverTablesHandler {
   private static final int MAX_BODY_LENGTH = (Transaction.MAX_ACCOUNTS * PublicKey.PUBLIC_KEY_LENGTH) << 1;
 
   FromAccountsHandler(final LookupTableDiscoveryService tableService,
-                      final LookupTableCache tableCache) {
-    super(InvocationType.NON_BLOCKING, tableService, tableCache);
+                      final LookupTableCache tableCache,
+                      final RpcCaller rpcCaller) {
+    super(InvocationType.NON_BLOCKING, tableService, tableCache, rpcCaller);
   }
 
   @Override
@@ -49,7 +51,8 @@ final class FromAccountsHandler extends DiscoverTablesHandler {
       response.setStatus(400);
       response.getHeaders().put(JSON_CONTENT);
       Content.Sink.write(response, true, """
-          {"msg": "Failed to read request body."}""", callback);
+          {"msg": "Failed to read request body."}""", callback
+      );
       return true;
     }
   }

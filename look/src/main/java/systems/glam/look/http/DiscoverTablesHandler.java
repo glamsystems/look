@@ -6,6 +6,7 @@ import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Callback;
 import software.sava.core.accounts.lookup.AddressLookupTable;
 import software.sava.services.solana.alt.LookupTableCache;
+import software.sava.services.solana.remote.call.RpcCaller;
 import systems.glam.look.LookupTableDiscoveryService;
 
 import static java.lang.System.Logger.Level.INFO;
@@ -16,8 +17,9 @@ abstract class DiscoverTablesHandler extends LookupTableDiscoveryServiceHandler 
 
   DiscoverTablesHandler(final InvocationType invocationType,
                         final LookupTableDiscoveryService tableService,
-                        final LookupTableCache tableCache) {
-    super(invocationType, tableService, tableCache);
+                        final LookupTableCache tableCache,
+                        final RpcCaller rpcCaller) {
+    super(invocationType, tableService, tableCache, rpcCaller);
   }
 
   record QueryParams(boolean accountsOnly, boolean stats, boolean reRank, boolean includeProvidedTables) {
@@ -70,13 +72,15 @@ abstract class DiscoverTablesHandler extends LookupTableDiscoveryServiceHandler 
       final var json = String.format("""
           {
             "s": %s
-          }""", txStats.toJson());
+          }""", txStats.toJson()
+      );
       Content.Sink.write(response, true, json, callback);
     } else if (queryParams.accountsOnly) {
       final var json = String.format("""
           {
             "s": %s
-          }""", txStats.toJson());
+          }""", txStats.toJson()
+      );
       Content.Sink.write(response, true, json, callback);
     } else if (lookupTables.length == 1) {
       final var table = lookupTables[0];
@@ -135,9 +139,10 @@ abstract class DiscoverTablesHandler extends LookupTableDiscoveryServiceHandler 
     writeResponse(response, callback, queryParams, lookupTables, txStats);
     final long responseWritten = System.currentTimeMillis();
     logger.log(INFO, String.format(
-        "[discoverTables=%dms] [httpExchange=%dms]",
-        end - start, responseWritten - startExchange
-    ));
+            "[discoverTables=%dms] [httpExchange=%dms]",
+            end - start, responseWritten - startExchange
+        )
+    );
   }
 
   protected final void writeResponse(final Response response,
@@ -172,7 +177,8 @@ abstract class DiscoverTablesHandler extends LookupTableDiscoveryServiceHandler 
     } else if (lookupTables.length == 1) {
       final var table = lookupTables[0];
       Content.Sink.write(response, true, """
-          [{"a":\"""" + table.address().toBase58() + "\",\"d\":\"" + table + "\"}]", callback);
+          [{"a":\"""" + table.address().toBase58() + "\",\"d\":\"" + table + "\"}]", callback
+      );
     } else {
       final var jsonBuilder = new StringBuilder(1_024 * lookupTables.length);
       jsonBuilder.append('[');
@@ -205,8 +211,9 @@ abstract class DiscoverTablesHandler extends LookupTableDiscoveryServiceHandler 
     writeResponse(response, callback, queryParams, lookupTables);
     final long responseWritten = System.currentTimeMillis();
     logger.log(INFO, String.format(
-        "[discoverTables=%dms] [httpExchange=%dms]",
-        end - start, responseWritten - startExchange
-    ));
+            "[discoverTables=%dms] [httpExchange=%dms]",
+            end - start, responseWritten - startExchange
+        )
+    );
   }
 }
