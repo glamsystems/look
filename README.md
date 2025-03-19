@@ -292,6 +292,6 @@ Run the service:
   --configFile="./.config/look_service.json" \
   --moduleName="systems.glam.look" \
   --mainClass="systems.glam.look.http.LookupTableWebService" \
-  --jvmArgs="-server -XX:+UseZGC -Xms7G -Xmx13G" \
+  --jvmArgs="-server -XX:+UseZGC -Xms8G -Xmx13G" \
   --screen=0
 ```

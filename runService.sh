@@ -2,7 +2,7 @@
 
 set -e
 
-readonly targetJavaVersion=23
+readonly targetJavaVersion=24
 simpleProjectName="look"
 moduleName="systems.glam.look"
 mainClass="systems.glam.look.http.LookupTableWebService"
