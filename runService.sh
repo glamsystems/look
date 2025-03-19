@@ -2,7 +2,7 @@
 
 set -e
 
-readonly targetJavaVersion=24
+targetJavaVersion=23
 simpleProjectName="look"
 moduleName="systems.glam.look"
 mainClass="systems.glam.look.http.LookupTableWebService"
@@ -36,6 +36,7 @@ do
       spn | simpleProjectName) simpleProjectName="$val";;
 
       jvm | jvmArgs) jvmArgs="$val";;
+      tjv | targetJavaVersion) targetJavaVersion="$val";;
 
       cf | configFile) configFile="$val";;
 
@@ -68,7 +69,7 @@ if [[ "$javaVersion" -ne "$targetJavaVersion" ]]; then
   exit 3
 fi
 
-./gradlew --exclude-task=test :"$simpleProjectName":jlink -PnoVersionTag=true
+./gradlew -PjavaVersion="$targetJavaVersion" --exclude-task=test :"$simpleProjectName":jlink -PnoVersionTag=true
 
 javaExe="$(pwd)/$simpleProjectName/build/$simpleProjectName/bin/java"
 readonly javaExe
