@@ -2,12 +2,12 @@
 
 set -e
 
-targetJavaVersion=23
+targetJavaVersion=24
 simpleProjectName="look"
 moduleName="systems.glam.look"
 mainClass="systems.glam.look.http.LookupTableWebService"
 
-jvmArgs="-server -XX:+UseZGC -Xms8G -Xmx13G"
+jvmArgs="-server -XX:+UseZGC -Xms8G -Xmx13G -XX:+UnlockExperimentalVMOptions -XX:+TrustFinalNonStaticFields"
 logLevel="INFO";
 configFile="";
 
@@ -61,15 +61,6 @@ do
     exit 1;
   fi
 done
-
-javaVersion=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | grep -oEi '^[0-9]+')
-readonly javaVersion
-if [[ "$javaVersion" -ne "$targetJavaVersion" ]]; then
-  echo "Invalid Java version $javaVersion must be $targetJavaVersion."
-  exit 3
-fi
-
-./gradlew -PjavaVersion="$targetJavaVersion" --exclude-task=test :"$simpleProjectName":jlink -PnoVersionTag=true
 
 javaExe="$(pwd)/$simpleProjectName/build/$simpleProjectName/bin/java"
 readonly javaExe

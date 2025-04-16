@@ -16,15 +16,16 @@ RUN --mount=type=secret,id=GITHUB_ACTOR \
 
 FROM alpine:3
 
-ARG UID=10001
+ARG UID=6148
 RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    glam
+ --system \
+ --disabled-password \
+ --gecos "" \
+ --home "/nonexistent" \
+ --shell "/sbin/nologin" \
+ --no-create-home \
+ --uid "${UID}" \
+  glam
 USER glam
 
 WORKDIR /look

@@ -2,7 +2,7 @@
 
 set -e
 
-targetJavaVersion=23
+targetJavaVersion=24
 
 for arg in "$@"
 do
@@ -31,7 +31,7 @@ if [[ "$javaVersion" -ne "$targetJavaVersion" ]]; then
   exit 3
 fi
 
-./gradlew --exclude-task=test :look:jlink -PnoVersionTag=true
+./gradlew -PtargetJava="$targetJavaVersion" --exclude-task=test :look:jlink -PnoVersionTag=true
 
 javaExe="$(pwd)/look/build/look/bin/java"
 readonly javaExe
