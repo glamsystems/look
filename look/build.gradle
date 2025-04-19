@@ -1,23 +1,13 @@
-apply plugin: 'org.beryx.jlink'
+apply(plugin: 'org.beryx.jlink')
 
 dependencies {
-  implementation libs.bouncycastle
-  implementation libs.json.iterator
-  implementation libs.sava.core
-  implementation libs.sava.rpc
+  implementation libs.bundles.sava.solana.programs
   implementation libs.sava.solana.web2
-  implementation libs.sava.solana.programs
-  implementation libs.sava.anchor.src.gen
-  implementation libs.sava.anchor.programs
   implementation libs.sava.ravina.core
   implementation libs.sava.ravina.jetty
   implementation libs.sava.ravina.solana
 
-  implementation libs.jetty.server
-  implementation libs.jetty.http2.server
-  implementation libs.jetty.alpn.server
-  implementation libs.jetty.alpn.java.server
-  implementation libs.jetty.http3.server
+  implementation libs.bundles.jetty
 }
 
 afterEvaluate {
