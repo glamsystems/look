@@ -137,11 +137,13 @@ public final class TableRecommendationHandler extends LookupTableDiscoveryServic
         to = Math.min(numEligible, from + SolanaRpcClient.MAX_MULTIPLE_ACCOUNTS);
         final var batch = eligibleKeyList.subList(from, to);
         final var eligibleAccounts = rpcCaller.courteousGet(
-            rpcClient -> rpcClient.getMultipleAccounts(batch),
+            rpcClient -> rpcClient.getAccounts(batch),
             "rpcClient::getEligibleAccounts"
         );
         for (final var accountInfo : eligibleAccounts) {
-          eligibleAccountOwners.put(accountInfo.pubKey(), accountInfo.owner());
+          if (accountInfo != null) {
+            eligibleAccountOwners.put(accountInfo.pubKey(), accountInfo.owner());
+          }
         }
       }
 
