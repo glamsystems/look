@@ -1,6 +1,6 @@
 ARG PROJECT="look"
 
-FROM gradle:jdk23-alpine AS jlink
+FROM gradle:jdk21-noble AS jlink
 
 WORKDIR /tmp
 
@@ -11,22 +11,22 @@ RUN --mount=type=secret,id=GITHUB_ACTOR \
     --mount=type=secret,id=GITHUB_TOKEN \
     export GITHUB_ACTOR=$(cat /run/secrets/GITHUB_ACTOR); \
     export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN); \
-    gradle -PjavaVersion=23 --console=plain --quiet --no-daemon --exclude-task=test :${PROJECT}:jlink -PnoVersionTag=true
+    gradle -PjavaVersion=24 --console=plain --no-daemon --exclude-task=test :${PROJECT}:jlink -PnoVersionTag=true
 
-
-FROM alpine:3
+FROM ubuntu:noble
 
 ARG UID=6148
-RUN adduser \
+RUN useradd \
+ --no-log-init \
  --system \
- --disabled-password \
- --gecos "" \
- --home "/nonexistent" \
- --shell "/sbin/nologin" \
+ --home-dir "/nonexistent" \
  --no-create-home \
+ --no-user-group \
+ --shell "/sbin/nologin" \
  --uid "${UID}" \
-  glam
-USER glam
+ look
+
+USER look
 
 WORKDIR /look
 

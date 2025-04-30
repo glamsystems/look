@@ -22,6 +22,7 @@ subprojects {
       modularity.inferModulePath = true
       toolchain {
         languageVersion = JLV
+        vendor = JvmVendorSpec.AZUL
       }
     }
   }
