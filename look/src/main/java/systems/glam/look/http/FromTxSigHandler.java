@@ -30,13 +30,13 @@ final class FromTxSigHandler extends FromRawTxHandler {
     try {
       final var txSig = Content.Source.asString(request);
       try {
-        final var txBytes = rpcCaller.courteousGet(
+        final var tx = rpcCaller.courteousGet(
             rpcClient -> rpcClient.getTransaction(CONFIRMED, txSig),
             CallContext.DEFAULT_CALL_CONTEXT,
             "rpcClient::getTransaction"
-        ).data();
-        // System.out.println(Base64.getEncoder().encodeToString(txBytes));
-        handle(request, response, callback, startExchange, txBytes);
+        );
+        // System.out.println(Base64.getEncoder().encodeToString(tx.data()));
+        handle(request, response, callback, startExchange, tx);
       } catch (final RuntimeException ex) {
         logger.log(System.Logger.Level.ERROR, "Failed to process request " + txSig, ex);
         response.setStatus(500);

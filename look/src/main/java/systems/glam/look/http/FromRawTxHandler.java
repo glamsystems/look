@@ -11,6 +11,7 @@ import software.sava.core.accounts.meta.LookupTableAccountMeta;
 import software.sava.core.tx.Instruction;
 import software.sava.core.tx.Transaction;
 import software.sava.core.tx.TransactionSkeleton;
+import software.sava.rpc.json.http.response.Tx;
 import software.sava.services.solana.alt.LookupTableCache;
 import software.sava.services.solana.remote.call.RpcCaller;
 import systems.glam.look.LookupTableDiscoveryService;
@@ -204,10 +205,19 @@ class FromRawTxHandler extends DiscoverTablesHandler {
 
   private static final AddressLookupTable[] NO_INCLUDES = new AddressLookupTable[0];
 
+  protected final void handle(final Request request,
+                              final Response response,
+                              final Callback callback,
+                              final long startExchange,
+                              final Tx tx) {
+    handle(request, response, callback, startExchange, tx, tx.data());
+  }
+
   protected void handle(final Request request,
                         final Response response,
                         final Callback callback,
                         final long startExchange,
+                        final Tx tx,
                         final byte[] txBytes) {
     final var queryParams = queryParams(request);
 
@@ -236,97 +246,102 @@ class FromRawTxHandler extends DiscoverTablesHandler {
     } else {
       final int txVersion = skeleton.version();
       if (txVersion == 0) {
-        final var lookupTableAccounts = skeleton.lookupTableAccounts();
-        final int numTableAccounts = lookupTableAccounts.length;
-        final var lookupTables = HashMap.<PublicKey, AddressLookupTable>newHashMap(numTableAccounts);
-        List<PublicKey> notCached = null;
-        final boolean includeTables = queryParams.includeProvidedTables();
-        if (includeTables) {
-          for (final var key : lookupTableAccounts) {
-            var lookupTable = tableService.scanForTable(key);
-            if (lookupTable == null) {
-              if (notCached == null) {
-                notCached = new ArrayList<>(numTableAccounts);
-              }
-              notCached.add(key);
-            } else {
-              final var cachedTable = tableCache.getTable(key);
-              if (cachedTable == null) {
-                lookupTable = lookupTable.withReverseLookup();
-                tableCache.mergeTable(0, lookupTable);
-              } else {
-                lookupTable = cachedTable;
-              }
-              lookupTables.put(lookupTable.address(), lookupTable);
-            }
-          }
-        } else {
-          for (final var key : lookupTableAccounts) {
-            var lookupTable = tableCache.getTable(key);
-            if (lookupTable == null) {
-              lookupTable = tableService.scanForTable(key);
+        final var meta = tx.meta();
+        final AddressLookupTable[] includeInDiscovery;
+        final AccountMeta[] accounts;
+        if (meta == null) {
+          final var lookupTableAccounts = skeleton.lookupTableAccounts();
+          final int numTableAccounts = lookupTableAccounts.length;
+          final var lookupTables = HashMap.<PublicKey, AddressLookupTable>newHashMap(numTableAccounts);
+          List<PublicKey> notCached = null;
+          final boolean includeTables = queryParams.includeProvidedTables();
+          if (includeTables) {
+            for (final var key : lookupTableAccounts) {
+              var lookupTable = tableService.scanForTable(key);
               if (lookupTable == null) {
                 if (notCached == null) {
                   notCached = new ArrayList<>(numTableAccounts);
                 }
                 notCached.add(key);
-                continue;
               } else {
-                lookupTable = lookupTable.withReverseLookup();
+                final var cachedTable = tableCache.getTable(key);
+                if (cachedTable == null) {
+                  lookupTable = lookupTable.withReverseLookup();
+                  tableCache.mergeTable(0, lookupTable);
+                } else {
+                  lookupTable = cachedTable;
+                }
+                lookupTables.put(lookupTable.address(), lookupTable);
               }
-              lookupTables.put(lookupTable.address(), lookupTable);
-            } else {
-              lookupTables.put(lookupTable.address(), lookupTable);
             }
-          }
-        }
-
-        final AddressLookupTable[] includeInDiscovery;
-        if (notCached != null) {
-          if (notCached.size() == 1) {
-            final var table = tableCache.getOrFetchTable(notCached.getFirst());
-            lookupTables.put(table.address(), table);
-            includeInDiscovery = includeTables
-                ? new AddressLookupTable[]{table}
-                : NO_INCLUDES;
           } else {
-            final var tables = tableCache.getOrFetchTables(notCached);
-            if (includeTables) {
-              includeInDiscovery = new AddressLookupTable[tables.length];
-              for (int i = 0; i < tables.length; ++i) {
-                final var table = tables[i].lookupTable();
-                includeInDiscovery[i] = table;
-                lookupTables.put(table.address(), table);
-              }
-            } else {
-              includeInDiscovery = NO_INCLUDES;
-              for (final var lookupTableAccountMeta : tables) {
-                final var table = lookupTableAccountMeta.lookupTable();
-                lookupTables.put(table.address(), table);
-              }
-            }
-          }
-          if (lookupTables.size() != numTableAccounts) {
             for (final var key : lookupTableAccounts) {
-              if (!lookupTables.containsKey(key)) {
-                response.setStatus(400);
-                Content.Sink.write(
-                    response, true, String.format(
-                        """
-                            {
-                              "msg": "Failed to find address lookup table %s."
-                            }""", key
-                    ), callback
-                );
-                return;
+              var lookupTable = tableCache.getTable(key);
+              if (lookupTable == null) {
+                lookupTable = tableService.scanForTable(key);
+                if (lookupTable == null) {
+                  if (notCached == null) {
+                    notCached = new ArrayList<>(numTableAccounts);
+                  }
+                  notCached.add(key);
+                  continue;
+                } else {
+                  lookupTable = lookupTable.withReverseLookup();
+                }
+                lookupTables.put(lookupTable.address(), lookupTable);
+              } else {
+                lookupTables.put(lookupTable.address(), lookupTable);
               }
             }
           }
+          if (notCached != null) {
+            if (notCached.size() == 1) {
+              final var table = tableCache.getOrFetchTable(notCached.getFirst());
+              lookupTables.put(table.address(), table);
+              includeInDiscovery = includeTables ? new AddressLookupTable[]{table} : NO_INCLUDES;
+            } else {
+              final var tables = tableCache.getOrFetchTables(notCached);
+              if (includeTables) {
+                includeInDiscovery = new AddressLookupTable[tables.length];
+                for (int i = 0; i < tables.length; ++i) {
+                  final var table = tables[i].lookupTable();
+                  includeInDiscovery[i] = table;
+                  lookupTables.put(table.address(), table);
+                }
+              } else {
+                includeInDiscovery = NO_INCLUDES;
+                for (final var lookupTableAccountMeta : tables) {
+                  final var table = lookupTableAccountMeta.lookupTable();
+                  lookupTables.put(table.address(), table);
+                }
+              }
+            }
+            if (lookupTables.size() != numTableAccounts) {
+              for (final var key : lookupTableAccounts) {
+                if (!lookupTables.containsKey(key)) {
+                  response.setStatus(400);
+                  Content.Sink.write(
+                      response, true, String.format(
+                          """
+                              {
+                                "msg": "Failed to find address lookup table %s."
+                              }""", key
+                      ), callback
+                  );
+                  return;
+                }
+              }
+            }
+          } else {
+            includeInDiscovery = NO_INCLUDES;
+          }
+          accounts = skeleton.parseAccounts(lookupTables);
         } else {
           includeInDiscovery = NO_INCLUDES;
+          final var loadedAddresses = meta.loadedAddresses();
+          accounts = skeleton.parseAccounts(loadedAddresses.writable(), loadedAddresses.readonly());
         }
 
-        final var accounts = skeleton.parseAccounts(lookupTables);
         final var instructions = skeleton.parseInstructions(accounts);
         final long start = System.currentTimeMillis();
         final var discoveredTables = queryParams.reRank()
@@ -384,7 +399,7 @@ class FromRawTxHandler extends DiscoverTablesHandler {
         final var encoding = getEncoding(request, response, callback);
         if (encoding != null) {
           final byte[] txBytes = encoding.decode(body);
-          handle(request, response, callback, startExchange, txBytes);
+          handle(request, response, callback, startExchange, null, txBytes);
         }
       } catch (final RuntimeException ex) {
         final var bodyString = new String(body);
